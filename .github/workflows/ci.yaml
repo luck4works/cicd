@@ -13,11 +13,12 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      - name: Build & Push with Kaniko
-        uses: aevea/action-kaniko@v0.12.0
-        with:
-          image: ghcr.io/${{ github.repository }}
-          tag: latest
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & Push with Kaniko (K8s-native)
+        run: |
+          kubectl run kaniko-build \
+            --rm -i \
+            --image=gcr.io/kaniko-project/executor:latest \
+            --restart=Never \
+            -- \
+            --context=git://github.com/${{ github.repository }}.git \
+            --destination=ghcr.io/${{ github.repository }}:latest
