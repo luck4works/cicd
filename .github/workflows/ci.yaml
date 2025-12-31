@@ -36,7 +36,6 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: luck4works/argocd
-          token: ${{ secrets.PAT_TOKEN }}
           path: argocd
 
       - name: Update values.yaml
