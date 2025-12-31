@@ -36,8 +36,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: luck4works/argocd
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           path: argocd
 
       - name: Update values.yaml
