@@ -6,7 +6,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -28,4 +28,26 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
+
+      - name: Checkout manifest repo
+        uses: actions/checkout@v5
+        with:
+          repository: luck4works/argocd # 👈 manifest 저장소
+          token: ${{ secrets.PAT_TOKEN }} # 👈 PAT 필요
+          path: manifest
+
+      - name: Update values.yaml
+        run: |
+          cd manifest/helm-cicd
+          sed -i 's|tag: .*|tag: "${{ github.sha }}"|' values.yaml
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add helm-cicd/values.yaml
+          git diff --staged --quiet || git commit -m "chore: update image tag to ${{ github.sha }}"
+          git push
