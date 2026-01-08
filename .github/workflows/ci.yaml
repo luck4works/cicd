@@ -6,15 +6,11 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       packages: write
 
     steps:
       - name: Check out repository code
         uses: actions/checkout@v5
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -31,10 +27,9 @@ jobs:
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64
           tags: |
             ghcr.io/${{ github.repository }}:${{ github.sha }}
-            ghcr.io/${{ github.repository }}:latest
 
       - name: Checkout manifest repo
         uses: actions/checkout@v5
@@ -46,7 +41,7 @@ jobs:
       - name: Update values.yaml
         run: |
           cd argocd/helm-cicd
-          sed -i 's|tag: .*|tag: "${{ github.sha }}"|' values.yaml
+          yq -i '.image.tag = strenv(GITHUB_SHA)' values.yaml
 
       - name: Commit and push
         run: |
